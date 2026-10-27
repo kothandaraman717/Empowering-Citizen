@@ -1,0 +1,56 @@
+# Test Cases & Sample Data
+
+## Sample Input Data Scenarios
+
+### Test Case 1: Low-Income Farmer (Central Scheme Focus)
+* **Age:** 35
+* **Gender:** Male
+* **Occupation:** Farmer
+* **Annual Income:** ₹1,50,000 (Low / BPL)
+* **State:** Uttar Pradesh
+* **Expected Eligible Schemes:**
+  1. PM-Kisan Samman Nidhi (Income <= ₹2,50,000, Farmer)
+  2. Ayushman Bharat (Income <= ₹2,50,000)
+  3. PM Vishwakarma Yojana (If category craft skills apply)
+
+---
+
+### Test Case 2: Rural Female Entrepreneur (State + Central Focus)
+* **Age:** 28
+* **Gender:** Female
+* **Occupation:** Small Business / Self-Employed
+* **Annual Income:** ₹1,80,000
+* **State:** Madhya Pradesh
+* **Expected Eligible Schemes:**
+  1. MP Ladli Behna Yojana (Female, MP resident)
+  2. PM MUDRA Yojana (Small Business owner)
+  3. Ayushman Bharat (Income <= ₹2,50,000)
+
+---
+
+### Test Case 3: Senior Citizen / Pensioner
+* **Age:** 68
+* **Gender:** Female
+* **Occupation:** Retired / Senior Citizen
+* **Annual Income:** ₹80,000
+* **State:** Tamil Nadu
+* **Expected Eligible Schemes:**
+  1. Indira Gandhi National Old Age Pension Scheme (Age >= 60, BPL)
+  2. Ayushman Bharat Health Insurance (Low income)
+
+---
+
+## Quick API Test Script (Browser Console)
+
+Run this snippet in the browser console on `index.html` to test rule engine matching programmatically:
+
+```javascript
+const sampleUser = { age: 32, gender: 'female', category: 'farmer', income: 150000, state: 'MP' };
+const matches = schemes.filter(s => 
+  sampleUser.age >= s.minAge && 
+  sampleUser.age <= s.maxAge && 
+  (s.category === 'all' || s.category === sampleUser.category) &&
+  sampleUser.income <= s.maxIncome
+);
+console.log("Eligible Schemes Count:", matches.length);
+console.table(matches);

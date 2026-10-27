@@ -1,0 +1,36 @@
+Markdown
+# YojanaSathi (SchemeSetu): Multilingual Voice Assistant for Govt Scheme Eligibility
+
+YojanaSathi is an AI-assisted, voice-first, vernacular platform designed to help citizens—especially rural, low-income, and non-literate populations—instantly discover government welfare schemes they qualify for through simple 5–6 voice prompts in their native language.
+
+---
+
+## Key Features
+- **Voice-First Interaction:** Web Speech API integration supporting English, Hindi, Tamil, Telugu, Bengali, and Marathi.
+- **Instant Eligibility Engine:** Client-side rule evaluation against central and state government schemes.
+- **Document Readiness Checklist:** Direct mapping of required documents (Aadhaar, Ration Card, Income Certificate) per scheme.
+- **CSC/Jan Seva Kendra Locator:** Simulated location finder for physical application centers.
+- **Kiosk / Anganwadi Worker Mode:** Enables community volunteers to quickly conduct assessments for multiple citizens.
+- **Accessibility & Offline-Ready:** High-contrast accessibility mode with zero external server dependencies for offline usability.
+
+---
+
+## Tech Stack
+- **Frontend:** Single-page HTML5, Tailwind CSS, Vanilla JS (ES6+)
+- **Speech Recognition & Synthesis:** Web Speech API (`webkitSpeechRecognition`, `speechSynthesis`)
+- **Icons & UI Utilities:** Lucide Icons, FontAwesome
+
+---
+
+## Local Setup Instructions
+
+### Prerequisites
+- Modern web browser (Google Chrome or Microsoft Edge recommended for full Speech API support).
+- Node.js (Optional, if using `http-server` or `live-server`).
+
+### Quick Start (No Build Tools Required)
+
+1. **Clone the Repository:**
+   ```bash
+   git clone [https://github.com/your-username/yojanasathi-voice-assistant.git](https://github.com/your-username/yojanasathi-voice-assistant.git)
+   cd yojanasathi-voice-assistant

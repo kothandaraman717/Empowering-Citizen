@@ -1,0 +1,6 @@
+yojanasathi/
+├── index.html              # Core single-page application & UI engine
+├── ARCHITECTURE.md         # Technical design document & system diagrams
+├── TEST_CASES.md          # Sample datasets and validation cases
+├── LICENSE                 # MIT License
+└── README.md               # Setup and project guide

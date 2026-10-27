@@ -1,0 +1,61 @@
+```markdown
+# Technical Design Document: YojanaSathi
+
+## System Architecture Overview
+
+[ Citizen / User ]
+│
+▼
+┌────────────────────────────────────────────────────────┐
+│                 Voice Interface Layer                  │
+│   - Web Speech API (STT / Speech-to-Text)              │
+│   - Speech Synthesis API (TTS / Text-to-Speech)        │
+│   - Vernacular Translation Pipeline                    │
+└──────────────────────────┬─────────────────────────────┘
+│
+▼
+┌────────────────────────────────────────────────────────┐
+│                Context Capture Module                  │
+│   Collects 5 Key Parameters:                           │
+│   1. Age                                               │
+│   2. Gender                                            │
+│   3. Category / Occupation                             │
+│   4. Annual Income (BPL / APL / EWS)                  │
+│   5. State / Region                                    │
+└──────────────────────────┬─────────────────────────────┘
+│
+▼
+┌────────────────────────────────────────────────────────┐
+│              Eligibility Rules Engine                  │
+│   - Evaluates predicates (Age range, Income cap)       │
+│   - Scores schemes by match priority                   │
+└──────────────────────────┬─────────────────────────────┘
+│
+▼
+┌────────────────────────────────────────────────────────┐
+│                Results & Guidance Dashboard            │
+│   - Matched Scheme Cards & Descriptions                │
+│   - Required Document Checklist                        │
+│   - Nearest Common Service Centre (CSC) Mapping        │
+│   - Anganwadi Worker Batch Log Output                  │
+└────────────────────────────────────────────────────────┘
+
+
+## Core Modules
+
+### 1. Voice Interaction Engine
+- Speech recognition captures user audio via browser APIs.
+- Audio transcriptions map directly to form field state variables.
+- TTS engine reads back question prompts and eligibility outcomes in selected regional languages.
+
+### 2. Scheme Rule Matching Logic
+Schemes are stored as JSON predicates:
+```json
+{
+  "id": "pm_kisan",
+  "name": "PM-Kisan Samman Nidhi",
+  "minAge": 18,
+  "maxAge": 100,
+  "category": "farmer",
+  "maxIncome": 250000
+}

@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YojanaSathi - Multilingual Voice Assistant for Government Schemes</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .pulse-mic {
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(234, 88, 12, 0.7); }
+            70% { transform: scale(1.08); box-shadow: 0 0 0 15px rgba(234, 88, 12, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(234, 88, 12, 0); }
+        }
+        .high-contrast {
+            background-color: #000000 !important;
+            color: #FFFF00 !important;
+        }
+        .high-contrast .bg-card, .high-contrast .bg-white {
+            background-color: #1a1a1a !important;
+            color: #ffffff !important;
+            border-color: #FFFF00 !important;
+        }
+    </style>
+</head>
+<body class="bg-orange-50/50 min-h-screen font-sans text-slate-800 transition-colors duration-300" id="appBody">
+
+    <!-- Navigation Header -->
+    <header class="bg-white border-b border-orange-100 sticky top-0 z-50 shadow-sm">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="bg-orange-600 text-white p-2 rounded-xl shadow-md">
+                    <i data-lucide="hand-heart" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-xl text-slate-900 leading-tight">YojanaSathi <span class="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full font-semibold">Voice AI</span></h1>
+                    <p class="text-xs text-slate-500">Government Scheme Eligibility Finder</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <!-- Language Selector -->
+                <select id="langSelect" onchange="changeLanguage(this.value)" class="bg-slate-100 border border-slate-200 text-slate-700 text-sm rounded-lg px-3 py-1.5 font-medium focus:ring-2 focus:ring-orange-500">
+                    <option value="en-IN">English</option>
+                    <option value="hi-IN">Hindi (हिंदी)</option>
+                    <option value="ta-IN">Tamil (தமிழ்)</option>
+                    <option value="te-IN">Telugu (తెలుగు)</option>
+                    <option value="bn-IN">Bengali (বাংলা)</option>
+                    <option value="mr-IN">Marathi (मराठी)</option>
+                </select>
+
+                <!-- High Contrast Toggle -->
+                <button onclick="toggleHighContrast()" title="Toggle High Contrast Mode" class="p-2 border border-slate-200 rounded-lg hover:bg-slate-100 transition">
+                    <i data-lucide="eye" class="w-5 h-5 text-slate-600"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-4xl mx-auto px-4 py-8">
+        
+        <!-- Step 1: Voice Questionnaire Header -->
+        <div id="quizHeader" class="text-center mb-8">
+            <span class="inline-block bg-orange-100 text-orange-800 text-xs px-3 py-1 rounded-full font-semibold mb-2">Easy 5-Step Voice Assistant</span>
+            <h2 id="mainPromptTitle" class="text-2xl sm:text-3xl font-bold text-slate-900">Answer 5 Questions to Find Your Eligible Schemes</h2>
+            <p id="mainPromptSubtitle" class="text-slate-600 text-sm mt-1">Tap the microphone and speak in your language or click options manually.</p>
+        </div>
+
+        <!-- Interactive Card Stack -->
+        <div id="questionnaireCard" class="bg-white border border-orange-100 rounded-2xl p-6 sm:p-8 shadow-lg max-w-2xl mx-auto">
+            
+            <!-- Progress Bar -->
+            <div class="mb-6">
+                <div class="flex justify-between text-xs font-semibold text-slate-500 mb-1">
+                    <span>Question <span id="currentStepNum">1</span> of 5</span>
+                    <span id="progressPercent">20%</span>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-2">
+                    <div id="progressBar" class="bg-orange-500 h-2 rounded-full transition-all duration-300" style="width: 20%;"></div>
+                </div>
+            </div>
+
+            <!-- Current Prompt Area -->
+            <div class="text-center my-6">
+                <div id="questionIcon" class="inline-flex bg-orange-50 text-orange-600 p-4 rounded-full mb-3">
+                    <i data-lucide="user" class="w-8 h-8"></i>
+                </div>
+                <h3 id="questionText" class="text-xl font-bold text-slate-800">What is your age?</h3>
+                <p id="questionHint" class="text-slate-500 text-xs mt-1">Say or enter your age in years (e.g., 35)</p>
+            </div>
+
+            <!-- Voice Control Center -->
+            <div class="flex flex-col items-center justify-center my-6">
+                <button id="micBtn" onclick="toggleVoiceInput()" class="w-20 h-20 bg-orange-600 hover:bg-orange-700 text-white rounded-full flex items-center justify-center shadow-lg transition transform active:scale-95 focus:outline-none focus:ring-4 focus:ring-orange-300">
+                    <i data-lucide="mic" class="w-10 h-10"></i>
+                </button>
+                <div id="voiceStatus" class="text-xs font-medium text-slate-500 mt-3 h-5">Click microphone to speak...</div>
+                <div id="transcriptionBox" class="text-sm font-medium text-orange-700 bg-orange-50 px-4 py-1.5 rounded-lg mt-2 hidden"></div>
+            </div>
+
+            <!-- Manual Input Alternative -->
+            <div id="manualInputContainer" class="mt-6 border-t border-slate-100 pt-6">
+                <label class="block text-xs font-semibold text-slate-500 mb-2 uppercase text-center">Or select/type manually</label>
+                <div id="optionButtons" class="grid grid-cols-2 gap-3 max-w-md mx-auto">
+                    <!-- Dynamic Input / Buttons injected here -->
+                </div>
+            </div>
+
+            <!-- Navigation Buttons -->
+            <div class="flex justify-between items-center mt-8 pt-4 border-t border-slate-100">
+                <button id="prevBtn" onclick="prevQuestion()" class="text-slate-500 hover:text-slate-800 text-sm font-semibold flex items-center gap-1 invisible">
+                    <i data-lucide="chevron-left" class="w-4 h-4"></i> Back
+                </button>
+                <button id="nextBtn" onclick="nextQuestion()" class="bg-slate-900 hover:bg-slate-800 text-white px-5 py-2 rounded-lg text-sm font-medium flex items-center gap-1 shadow-sm">
+                    Next <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Results Section (Initially Hidden) -->
+        <div id="resultsSection" class="hidden">
+            <div class="bg-white border border-emerald-100 rounded-2xl p-6 sm:p-8 shadow-lg mb-8">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 border-b border-slate-100 pb-4">
+                    <div>
+                        <span class="bg-emerald-100 text-emerald-800 text-xs px-3 py-1 rounded-full font-semibold">Matches Found</span>
+                        <h2 class="text-2xl font-bold text-slate-900 mt-1">Your Eligible Government Schemes</h2>
+                        <p class="text-slate-500 text-xs">Based on your demographic profile</p>
+                    </div>
+                    <button onclick="resetQuestionnaire()" class="text-xs border border-slate-300 hover:bg-slate-50 text-slate-700 px-3 py-2 rounded-lg font-medium flex items-center gap-1">
+                        <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Start Over
+                    </button>
+                </div>
+
+                <!-- Matched Schemes Grid -->
+                <div id="schemesGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Cards populated via JS -->
+                </div>
+            </div>
+
+            <!-- Nearby Common Service Centre (CSC) Locator -->
+            <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm mb-8">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="bg-blue-50 text-blue-600 p-2 rounded-lg">
+                        <i data-lucide="map-pin" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-slate-900">Nearest Jan Seva Kendra / CSC Centre</h3>
+                        <p class="text-xs text-slate-500">Visit in person with required documents to complete application</p>
+                    </div>
+                </div>
+
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                        <h4 class="font-bold text-slate-800 text-sm">Pradhan Mantri Nagrik Seva Kendra #104</h4>
+                        <p class="text-xs text-slate-600">Main Market Road, District HQ • Open 9:00 AM - 6:00 PM</p>
+                        <p class="text-xs text-slate-500 mt-1"><strong>Phone:</strong> +91 98765 43210</p>
+                    </div>
+                    <button onclick="alert('Navigating to nearest center on map...')" class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-4 py-2 rounded-lg font-medium flex items-center gap-1 shadow-sm">
+                        <i data-lucide="navigation" class="w-3.5 h-3.5"></i> Get Directions
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-200 bg-white py-6 mt-12 text-center text-xs text-slate-500">
+        <p>YojanaSathi Hackathon Prototype • Accessible, Vernacular Civic Tech</p>
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // State management
+        let currentStep = 0;
+        let selectedLang = 'en-IN';
+        let isListening = false;
+        let recognition = null;
+        let userProfile = { age: null, gender: null, category: null, income: null, state: null };
+
+        // Database of Schemes
+        const schemesData = [
+            {
+                id: "pm_kisan",
+                title: "PM-Kisan Samman Nidhi",
+                ministry: "Ministry of Agriculture",
+                benefit: "₹6,000 per year direct income support in 3 equal installments",
+                docs: ["Aadhaar Card", "Land Ownership Record (Khatauni)", "Bank Passbook"],
+                category: "farmer",
+                maxIncome: 250000,
+                minAge: 18,
+                maxAge: 100
+            },
+            {
+                id: "ayushman",
+                title: "Ayushman Bharat (PM-JAY)",
+                ministry: "Ministry of Health and Family Welfare",
+                benefit: "Free health coverage up to ₹5 Lakh per family per year for secondary hospitalization",
+                docs: ["Aadhaar Card", "Ration Card", "Income Certificate"],
+                category: "all",
+                maxIncome: 250000,
+                minAge: 0,
+                maxAge: 100
+            },
+            {
+                id: "mudra",
+                title: "PM MUDRA Loan Scheme",
+                ministry: "Ministry of Finance",
+                benefit: "Collateral-free business loans up to ₹10 Lakh for small entrepreneurs",
+                docs: ["Business Plan", "Aadhaar / PAN Card", "Bank Statement (6 Months)"],
+                category: "business",
+                maxIncome: 800000,
+                minAge: 18,
+                maxAge: 65
+            },
+            {
+                id: "ladli_behna",
+                title: "Chief Minister Ladli Behna Yojana",
+                ministry: "State Welfare Department",
+                benefit: "₹1,250 monthly direct cash transfer into bank account",
+                docs: ["Aadhaar Card", "Samagra ID / Family ID", "Bank Passbook Linked with Aadhaar"],
+                category: "all",
+                gender: "female",
+                maxIncome: 250000,
+                minAge: 21,
+                maxAge: 60
+            },
+            {
+                id: "pm_awas",
+                title: "PM Awas Yojana (PMAY-Gramin)",
+                ministry: "Ministry of Rural Development",
+                benefit: "Financial assistance up to ₹1.2 Lakh for building a pucca home",
+                docs: ["Aadhaar Card", "Job Card (MGNREGA)", "Bank Account Details", "Land Record"],
+                category: "all",
+                maxIncome: 200000,
+                minAge: 18,
+                maxAge: 80
+            }
+        ];
+
+        // Questionnaire Config
+        const questions = [
+            {
+                key: "age",
+                text: "What is your age?",
+                hint: "Type your age in numbers (e.g., 35)",
+                icon: "user",
+                type: "number",
+                options: ["25", "35", "45", "60"]
+            },
+            {
+                key: "gender",
+                text: "Select your gender",
+                hint: "Choose or say your gender",
+                icon: "users",
+                type: "select",
+                options: [
+                    { label: "Male", value: "male" },
+                    { label: "Female", value: "female" },
+                    { label: "Other", value: "other" }
+                ]
+            },
+            {
+                key: "category",
+                text: "What is your primary occupation?",
+                hint: "Select the option that best describes your work",
+                icon: "briefcase",
+                type: "select",
+                options: [
+                    { label: "Farmer / Agriculture", value: "farmer" },
+                    { label: "Small Business / Self-Employed", value: "business" },
+                    { label: "Daily Wage Worker / Laborer", value: "laborer" },
+                    { label: "Student / Other", value: "other" }
+                ]
+            },
+            {
+                key: "income",
+                text: "What is your estimated annual family income?",
+                hint: "Select your annual income bracket",
+                icon: "indian-rupee",
+                type: "select",
+                options: [
+                    { label: "Below ₹1.5 Lakh", value: 150000 },
+                    { label: "₹1.5 Lakh - ₹2.5 Lakh", value: 250000 },
+                    { label: "₹2.5 Lakh - ₹5 Lakh", value: 500000 },
+                    { label: "Above ₹5 Lakh", value: 800000 }
+                ]
+            },
+            {
+                key: "state",
+                text: "Which state do you reside in?",
+                hint: "Select your home state",
+                icon: "map-pin",
+                type: "select",
+                options: [
+                    { label: "Uttar Pradesh", value: "UP" },
+                    { label: "Madhya Pradesh", value: "MP" },
+                    { label: "Tamil Nadu", value: "TN" },
+                    { label: "Maharashtra", value: "MH" }
+                ]
+            }
+        ];
+
+        // Speech Recognition Setup
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript.toLowerCase();
+                document.getElementById('transcriptionBox').innerText = `Heard: "${transcript}"`;
+                document.getElementById('transcriptionBox').classList.remove('hidden');
+                processVoiceAnswer(transcript);
+                stopVoice();
+            };
+
+            recognition.onerror = function() {
+                document.getElementById('voiceStatus').innerText = "Could not hear clearly. Try again or click below.";
+                stopVoice();
+            };
+
+            recognition.onend = function() {
+                stopVoice();
+            };
+        }
+
+        function toggleVoiceInput() {
+            if (!recognition) {
+                alert("Speech recognition is not supported in this browser. Please use Chrome or Edge.");
+                return;
+            }
+            if (isListening) {
+                stopVoice();
+            } else {
+                startVoice();
+            }
+        }
+
+        function startVoice() {
+            isListening = true;
+            recognition.lang = selectedLang;
+            recognition.start();
+            document.getElementById('micBtn').classList.add('pulse-mic', 'bg-red-600');
+            document.getElementById('voiceStatus').innerText = "Listening... Speak now";
+            speakText(questions[currentStep].text);
+        }
+
+        function stopVoice() {
+            isListening = false;
+            document.getElementById('micBtn').classList.remove('pulse-mic', 'bg-red-600');
+            document.getElementById('voiceStatus').innerText = "Click microphone to speak...";
+        }
+
+        function speakText(text) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = selectedLang;
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        function changeLanguage(lang) {
+            selectedLang = lang;
+            speakText("Language changed");
+        }
+
+        function renderQuestion() {
+            const q = questions[currentStep];
+            document.getElementById('currentStepNum').innerText = currentStep + 1;
+            document.getElementById('progressBar').style.width = `${((currentStep + 1) / 5) * 100}%`;
+            document.getElementById('progressPercent').innerText = `${((currentStep + 1) / 5) * 100}%`;
+            
+            document.getElementById('questionText').innerText = q.text;
+            document.getElementById('questionHint').innerText = q.hint;
+            document.getElementById('transcriptionBox').classList.add('hidden');
+
+            const container = document.getElementById('optionButtons');
+            container.innerHTML = '';
+
+            if (q.type === 'number') {
+                const input = document.createElement('input');
+                input.type = 'number';
+                input.id = 'numberInput';
+                input.placeholder = 'e.g. 35';
+                input.className = 'col-span-2 text-center text-lg font-semibold border-2 border-orange-200 rounded-xl py-3 focus:outline-none focus:border-orange-500';
+                input.value = userProfile[q.key] || '';
+                container.appendChild(input);
+            } else {
+                q.options.forEach(opt => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = `w-full py-3 px-4 rounded-xl text-sm font-semibold border transition text-left flex justify-between items-center ${userProfile[q.key] === opt.value ? 'bg-orange-600 text-white border-orange-600 shadow-md' : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-orange-50 hover:border-orange-200'}`;
+                    btn.innerText = opt.label;
+                    btn.onclick = () => {
+                        userProfile[q.key] = opt.value;
+                        renderQuestion();
+                    };
+                    container.appendChild(btn);
+                });
+            }
+
+            document.getElementById('prevBtn').style.visibility = currentStep === 0 ? 'hidden' : 'visible';
+            document.getElementById('nextBtn').innerText = currentStep === questions.length - 1 ? 'See Results' : 'Next';
+            lucide.createIcons();
+        }
+
+        function processVoiceAnswer(transcript) {
+            const q = questions[currentStep];
+            if (q.type === 'number') {
+                const matchedNum = transcript.match(/\d+/);
+                if (matchedNum) {
+                    userProfile[q.key] = parseInt(matchedNum[0], 10);
+                    renderQuestion();
+                }
+            } else {
+                q.options.forEach(opt => {
+                    if (transcript.includes(opt.label.toLowerCase()) || transcript.includes(String(opt.value).toLowerCase())) {
+                        userProfile[q.key] = opt.value;
+                        renderQuestion();
+                    }
+                });
+            }
+        }
+
+        function nextQuestion() {
+            const q = questions[currentStep];
+            if (q.type === 'number') {
+                const numVal = document.getElementById('numberInput').value;
+                if (numVal) userProfile[q.key] = parseInt(numVal, 10);
+            }
+
+            if (!userProfile[q.key]) {
+                alert("Please select or enter an answer before proceeding.");
+                return;
+            }
+
+            if (currentStep < questions.length - 1) {
+                currentStep++;
+                renderQuestion();
+            } else {
+                evaluateEligibility();
+            }
+        }
+
+        function prevQuestion() {
+            if (currentStep > 0) {
+                currentStep--;
+                renderQuestion();
+            }
+        }
+
+        function evaluateEligibility() {
+            document.getElementById('questionnaireCard').classList.add('hidden');
+            document.getElementById('quizHeader').classList.add('hidden');
+            document.getElementById('resultsSection').classList.remove('hidden');
+
+            const grid = document.getElementById('schemesGrid');
+            grid.innerHTML = '';
+
+            const matchedSchemes = schemesData.filter(s => {
+                const ageMatch = userProfile.age >= s.minAge && userProfile.age <= s.maxAge;
+                const catMatch = s.category === 'all' || s.category === userProfile.category;
+                const incomeMatch = userProfile.income <= s.maxIncome;
+                const genderMatch = !s.gender || s.gender === userProfile.gender;
+                return ageMatch && catMatch && incomeMatch && genderMatch;
+            });
+
+            if (matchedSchemes.length === 0) {
+                grid.innerHTML = `<p class="col-span-2 text-center text-slate-500 py-6">No direct scheme matches found based on current criteria. Try adjusting income or occupation details.</p>`;
+                return;
+            }
+
+            matchedSchemes.forEach(scheme => {
+                const card = document.createElement('div');
+                card.className = "border border-orange-100 bg-orange-50/30 rounded-xl p-5 shadow-sm hover:shadow-md transition flex flex-col justify-between";
+                card.innerHTML = `
+                    <div>
+                        <div class="flex justify-between items-start gap-2 mb-2">
+                            <h3 class="font-bold text-slate-900 text-base">${scheme.title}</h3>
+                            <span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full">Eligible</span>
+                        </div>
+                        <p class="text-xs text-orange-700 font-semibold mb-3">${scheme.ministry}</p>
+                        <p class="text-xs text-slate-600 mb-4 bg-white p-3 rounded-lg border border-slate-100">${scheme.benefit}</p>
+                        <div class="mb-4">
+                            <h4 class="text-xs font-bold text-slate-700 mb-1">Required Documents:</h4>
+                            <ul class="text-xs text-slate-600 list-disc list-inside space-y-0.5">
+                                ${scheme.docs.map(doc => `<li>${doc}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                    <button onclick="alert('Proceeding to portal for ${scheme.title}')" class="w-full bg-orange-600 hover:bg-orange-700 text-white text-xs font-semibold py-2 rounded-lg transition shadow-sm">
+                        Apply Now
+                    </button>
+                `;
+                grid.appendChild(card);
+            });
+            lucide.createIcons();
+        }
+
+        function resetQuestionnaire() {
+            currentStep = 0;
+            userProfile = { age: null, gender: null, category: null, income: null, state: null };
+            document.getElementById('resultsSection').classList.add('hidden');
+            document.getElementById('questionnaireCard').classList.remove('hidden');
+            document.getElementById('quizHeader').classList.remove('hidden');
+            renderQuestion();
+        }
+
+        function toggleHighContrast() {
+            document.getElementById('appBody').classList.toggle('high-contrast');
+        }
+
+        // Initialize on page load
+        window.onload = function() {
+            renderQuestion();
+            lucide.createIcons();
+        };
+    </script>
+</body>
+</html>
